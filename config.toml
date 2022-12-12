@@ -1,0 +1,134 @@
+languageCode = 'en-us'
+baseurl = "https://github.com/JijunDai"
+DefaultContentLanguage = "en"
+title = 'Jijun Blog'
+theme = "beautifulhugo"
+pygmentsStyle = "trac"
+pygmentsUseClasses = true
+pygmentsCodeFences = true
+pygmentsCodefencesGuessSyntax = true
+#pygmentsUseClassic = true
+#pygmentOptions = "linenos=inline"
+#disqusShortname = "XXX"
+#googleAnalytics = "XXX"
+
+#[languages]
+#[languages.en]
+#contentDir = "content/en" # English
+#[languages.zh-CN]
+#contentDir = "content/zh" # Chinese
+
+[Params]
+#homeTitle = "Jijun Dai's Blog" # Set a different text for the header on the home page
+homeTitle = " "
+#subtitle = "吾行在野，芃芃其麦"
+mainSections = ["post","posts"]
+logo = "img/my-avatar-icon.jpeg" # Expecting square dimensions
+favicon = "img/favicon.ico"
+dateFormat = "January 2, 2006"
+commit = false
+#rss = true
+comments = true
+readingTime = true
+wordCount = true
+useHLJS = true
+#socialShare = true
+delayDisqus = true
+showRelatedPosts = true
+#  hideAuthor = true
+#  gcse = "012345678901234567890:abcdefghijk" # Get your code from google.com/cse. Make sure to go to "Look and Feel" and change Layout to "Full Width" and Theme to "Classic"
+
+#[[Params.bigimg]]
+#  src = "img/triangle.jpg"
+#  desc = "Triangle"
+#[[Params.bigimg]]
+#  src = "img/sphere.jpg"
+#  desc = "Sphere"
+#  # position: see values of CSS background-position.
+#  position = "center top"
+#[[Params.bigimg]]
+#  src = "img/hexagon.jpg"
+#  desc = "Hexagon"
+[[Params.bigimg]]
+  src = "img/wallpaperflare.com_wallpaper.jpg"
+  desc = "Home"
+
+[Author]
+# Set only your "username" for default hosts and full URLs otherwise (e.g., "https://MyGitLab.org/username")
+name = "Jijun Dai"
+email = "dai.jijun@gmail.com"
+github = "JijunDai"
+linkedin = "jijun-dai-b56196129"
+#website = "yourwebsite.com"
+#facebook = "username"
+#gitlab = "username"
+#bitbucket = "username"
+#twitter = "username"
+#reddit = "username"
+#xing = "username"
+#stackoverflow = "users/XXXXXXX/username"
+#snapchat = "username"
+#instagram = "username"
+#youtube = "user/username" # or channel/channelname
+#soundcloud = "username"
+#spotify = "username"
+#bandcamp = "username"
+#itchio = "username"
+#vk = "username"
+#paypal = "username"
+#telegram = "username"
+#500px = "username"
+#codepen = "username"
+#mastodon = "url"
+#kaggle = "username"
+#weibo = "username"
+#slack = "username"
+#discord = "invite code (https://discord.gg/XXXXXXX)"
+#strava = "userid"
+
+[[menu.main]]
+name = "Blog"
+url = ""
+weight = 1
+
+[[menu.main]]
+name = "About"
+url = "page/about/"
+weight = 4
+
+[[menu.main]]
+identifier = "Series"
+name = "series"
+weight = 2
+
+[[menu.main]]
+parent = "Series"
+name = "Go dev"
+url = "tags/go/"
+#pre = "<i class='fa fa-heart'></i>"
+#[menu.main.params]
+#class = 'highlight-menu-item'
+weight = 1
+
+[[menu.main]]
+parent = "Series"
+name = "Kubernetes"
+url = "tags/k8s/"
+weight = 2
+
+[[menu.main]]
+parent = "Series"
+name = "Istio"
+url = "tags/istio/"
+weight = 3
+
+[[menu.main]]
+name = "Tags"
+url = "tags"
+weight = 3
+
+[taxonomies]
+# Use singular rather than plural for default taxonomies
+tag = "tags"
+#series = "series"
+category = "categorys"
