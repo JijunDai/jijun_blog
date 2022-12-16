@@ -649,3 +649,176 @@ Now we have set up the backup system.
    ```
 
 It will create a directory backup with all contents.
+
+---
+### Code from <bash cook>
+```shell
+#!/usr/bin/env bash
+
+# Use a : NOOP and here document to embed documentation,
+: <<'END_OF_DOCS'
+# replace the semi with a blank
+NEWPATH=${PATH/;/ }
+#
+# switch the text on either side of a semi
+sed -e 's/^\(.*\);\(.*\)$/\2;\1/' < $FILE
+
+    Embedded documentation here
+    [...]
+    $* ${@} $#
+    ${#} with ${#VAR} or even ${VAR#alt}
+    FILEDIR=${1:-"/tmp"}
+    ${VAR:=value} and ${VAR:-value} and ${HOME=/tmp}
+    More Than Just a Constant String for Default: ${BASE:="$(pwd)"}
+    Command substitution: $( cmds )
+    Arithmeticexpansion: $((...))   ex: echo ${BASE:=/home/uid$((ID+1))}
+
+    # cookbook filename: check_unset_parms
+    #
+    USAGE="usage: myscript scratchdir sourcefile conversion"
+    FILEDIR=${1:?"Error. You must supply a scratch directory."}
+    FILESRC=${2:?"Error. You must supply a source file."}
+    CVTTYPE=${3:?"Error. ${USAGE}. $(rm $SCRATCHFILE)"}
+
+    inside ${ ... }             Action taken
+
+    name:number:number          Substring starting character, length
+    #name                       Return the length of the string
+    name#pattern                Remove (shortest) front-anchored pattern
+    name##pattern               Remove (longest) front-anchored pattern
+    name%pattern                Remove (shortest) rear-anchored pattern
+    name%%pattern               Remove (longest) rear-anchored pattern
+    name/pattern/string         Replace first occurrence
+    name//pattern/string        Replace all occurrences
+
+    Try them all. They are very handy.
+
+    #array of variables
+    MYRA=(first second third home)
+    ${MYRA[0]} and ${MYRA[2]}
+
+    # some examples
+    if [ $# -lt 3 ]  vs  if (( $# < 3 ))
+    if [ -r "$FN" -a \( -f "$FN" -o  -p "$FN" \) ]
+    if [ -z "$V1" -o -z "${V2:=YIKES}" ]
+    Use the -eq operator for numeric comparisons and the equality primary = (or ==) for string comparisons.
+
+    Use the double-bracket compound statement in an if statement to enable shell-style pattern matches 
+    on the righthand side of the equals operator:
+     if [[ "${MYFILENAME}" == *.jpg ]]
+
+    shopt -s extglob
+     if [[ "$FN" == *.@(jpg|jpeg) ]]
+     then
+    # and so on
+    Grouping symbols for extended pattern-matching
+    @( ... )           Only one occurrence
+    *( ... )           Zero or more occurrences   
+    +( ... )           One or more occurrences
+    ?( ... )           Zero or one occurrences
+    !( ... )           Not these occurrences, but anything else
+
+Sometimes even the extended pattern matching of the extglob option isn’t enough.
+What you really need are regular expressions.
+# bash version >= 3.0
+     for CDTRACK in *
+     do
+         if [[ "$CDTRACK" =~ "([[:alpha:][:blank:]]*)- ([[:digit:]]*) - (.*)$" ]]
+         then
+             echo Track ${BASH_REMATCH[2]} is ${BASH_REMATCH[3]}
+             mv "$CDTRACK" "Track${BASH_REMATCH[2]}"
+         fi
+     done
+The subexpressions, each enclosed in parentheses, are used to populate the bash built-in array
+variable $BASH_REMATCH. The zeroth element ($BASH_REMATCH[0]) is the entire string matched by
+the regular expression. Any subexpressions are available as $BASH_REMATCH[1], $BASH_REMATCH[2], and so on.
+
+while (( 1 ))
+{
+...
+}
+
+                while read lineoftext
+                do
+                  process that line
+                done < file.input
+# or --------------------------------------
+                cat file.input | \
+                while read lineoftext
+                do
+                  process that line
+                done
+
+# Like C Language, but with double parentheses:
+$ for (( i=0 ; i < 10 ; i++ )) ; do echo $i ; done
+# Looping with Floating-Point Values
+for fp in $(seq 1.0 .01 1.1) ; do ...; done
+
+$ grep 'Dec [0-9 ][0-9]' logfile
+It’s good to get into the habit of
+using single quotes around anything that might possibly be confusing to the shell.
+Another mechanism we want to introduce is a repetition mechanism written as \{n,m\}
+where n is the minimum number of repetitions and m is the maximum.
+If it is written as \{n\} it means “exactly n times,” and when written as “\{n,\}” then “at least n times.”
+
+$ find . -name '*.mp3' -print0 | xargs -i -0 mv '{}' ~/songs
+$ find some_directory -type f -print0 | xargs -0 chmod 0644
+$ find . -follow -name '*.mp3' -print0 | xargs -i -0 mv '{}' ~/songs
+$ find . -mtime +7 -a -mtime -14 -print
+$ find . -mtime +14 -name '*.text' -o \( -mtime -14 -name '*.txt' \) -print
+
+for path in ${PATH//:/ } /opt/foo/bin /opt/bar/bin; do
+[ -x "$path/ls" ] && $path/ls
+done
+
+nohup mydaemonscript  0<&-  1>/dev/null  2>&1  &
+##or:
+nohup mydaemonscript  >>/var/log/myadmin.log  2>&1  <&-  &
+
+## Parsing Output into an Array
+LSL=$(ls -ld $1)
+declare -a MYRA
+MYRA=($LSL)
+echo the file $1 is ${MYRA[4]} bytes.
+
+for ((i=0; i < ${#ALINE}; i++))
+do
+ACHAR=${ALINE:i:1}
+# do something here, e.g. echo $ACHAR
+done
+
+svn status src | grep '^\?' | cut -c8- | \
+while read fn; do echo "$fn"; rm -rf "$fn"; done
+
+END_OF_DOCS
+
+: <<'SEEING_ALL_VARIABLE_VALUES'
+Use the set command to see the value of all variables and function definitions in the current shell.
+Use the env (or export -p) command to see only those variables that have been exported
+and would be available to a subshell.
+SEEING_ALL_VARIABLE_VALUES
+
+###Trapping Interrupts
+function trapped {
+if [ "$1" = "USR1" ]; then
+echo "Got me with a $1 trap!"
+exit else
+echo "Received $1 trap--neener, neener"
+fi
+}
+trap "trapped ABRT" ABRT
+trap "trapped EXIT" EXIT
+trap "trapped HUP"  HUP
+trap "trapped INT"  INT
+trap "trapped KILL" KILL
+trap "trapped QUIT" QUIT
+trap "trapped TERM" TERM
+trap "trapped USR1" USR1
+# This won't actually work
+# This one is special
+    # Just hang out and do nothing, without introducing "third-party"
+    # trap behavior, such as if we used 'sleep'
+while (( 1 )); do
+:   # : is a NOOP
+done
+```

@@ -7,7 +7,6 @@ pygmentsStyle = "trac"
 pygmentsUseClasses = true
 pygmentsCodeFences = true
 pygmentsCodefencesGuessSyntax = true
-#pygmentsUseClassic = true
 #pygmentOptions = "linenos=inline"
 #disqusShortname = "XXX"
 #googleAnalytics = "XXX"
@@ -88,7 +87,7 @@ linkedin = "jijun-dai-b56196129"
 
 [[menu.main]]
 name = "Blog"
-url = ""
+url = "/"
 weight = 1
 
 [[menu.main]]

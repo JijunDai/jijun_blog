@@ -6,6 +6,7 @@ tags:
 - Development
 - python
 - virtualenv
+- docker
 ---
 
 **What activating actually does** 

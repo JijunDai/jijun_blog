@@ -214,5 +214,17 @@ https://fluxcd.io/flux/get-started/
 ✔ notification-controller: deployment ready
 ✔ source-controller: deployment ready
 ✔ all components are healthy
-
+```
+---
+### cert-manager
+```shell
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.1/cert-manager.yaml
+```
+---
+### Rook Cluster
+```shell
+$ git clone --single-branch --branch v1.10.7 https://github.com/rook/rook.git
+cd rook/deploy/examples
+kubectl create -f crds.yaml -f common.yaml -f operator.yaml
+kubectl create -f cluster.yaml
 ```
