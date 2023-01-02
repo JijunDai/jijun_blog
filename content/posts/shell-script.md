@@ -7,6 +7,9 @@ tags:
 - development
 - script
 ---
+# Shell script collection
+
+## awk examples
 
 ```bash
 awk -F: '{$3>1000?usertype="Not system user":usertype="systemID";printf "%-15s:%s\n",$1,usertype}' /etc/passwd
@@ -33,9 +36,9 @@ awk '{ip[$1]++}END{for(i in ip) print i, ip[i]}' /var/log/httpd/access_log
 ```
 
 ---------------
+## Linux Web服务器网站故障分析常用的命令
 
 ```shell
-Linux Web服务器网站故障分析常用的命令
 
 系统连接状态篇：
 1.查看TCP连接状态
@@ -48,8 +51,6 @@ netstat -n | awk ‘/^tcp/ {++arr[$NF]};END {for(k in arr) print k,"t",arr[k]}�
 netstat -n |awk ‘/^tcp/ {print $NF}’|sort|uniq -c|sort -rn
 
 netstat -ant | awk ‘{print $NF}’ | grep -v ‘[a-z]‘ | sort | uniq -c
-
-
 
 2.查找请求数请20个IP（常用于查找攻来源）：
 
@@ -72,7 +73,6 @@ netstat -an | grep SYN | awk ‘{print $5}’ | awk -F: ‘{print $1}’ | sort 
 6.根据端口列进程
 
 netstat -ntlp | grep 80 | awk ‘{print $7}’ | cut -d/ -f1
-
 
 
 网站日志分析篇1（Apache）：
@@ -651,7 +651,8 @@ Now we have set up the backup system.
 It will create a directory backup with all contents.
 
 ---
-### Code from <bash cook>
+
+## Code from <bash cook>
 ```shell
 #!/usr/bin/env bash
 
@@ -822,3 +823,123 @@ while (( 1 )); do
 :   # : is a NOOP
 done
 ```
+---
+## Case 1: initial linux system
+```shell
+#/bin/bash
+# 设置时区并同步时间
+ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+if ! crontab -l |grep ntpdate &>/dev/null ; then
+    (echo "* 1 * * * ntpdate time.windows.com >/dev/null 2>&1";crontab -l) |crontab 
+fi
+
+# 禁用selinux
+sed -i '/SELINUX/{s/permissive/disabled/}' /etc/selinux/config
+
+# 关闭防火墙
+if egrep "7.[0-9]" /etc/redhat-release &>/dev/null; then
+    systemctl stop firewalld
+    systemctl disable firewalld
+elif egrep "6.[0-9]" /etc/redhat-release &>/dev/null; then
+    service iptables stop
+    chkconfig iptables off
+fi
+
+# 历史命令显示操作时间
+if ! grep HISTTIMEFORMAT /etc/bashrc; then
+    echo 'export HISTTIMEFORMAT="%F %T `whoami` "' >> /etc/bashrc
+fi
+
+# SSH超时时间
+if ! grep "TMOUT=600" /etc/profile &>/dev/null; then
+    echo "export TMOUT=600" >> /etc/profile
+fi
+
+# 禁止root远程登录
+sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+
+# 禁止定时任务向发送邮件
+sed -i 's/^MAILTO=root/MAILTO=""/' /etc/crontab 
+
+# 设置最大打开文件数
+if ! grep "* soft nofile 65535" /etc/security/limits.conf &>/dev/null; then
+    cat >> /etc/security/limits.conf << EOF
+    * soft nofile 65535
+    * hard nofile 65535
+    EOF
+fi
+
+# 系统内核优化
+cat >> /etc/sysctl.conf << EOF
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_tw_buckets = 20480
+net.ipv4.tcp_max_syn_backlog = 20480
+net.core.netdev_max_backlog = 262144
+net.ipv4.tcp_fin_timeout = 20  
+EOF
+
+# 减少SWAP使用
+echo "0" > /proc/sys/vm/swappiness
+
+# 安装系统性能分析工具及其他
+yum install gcc make autoconf vim sysstat net-tools iostat iftop iotp lrzsz -y
+```
+## Case 2: Get system resource
+```shell
+#!/bin/bash
+function cpu() {
+    NUM=1
+    while [ $NUM -le 3 ]; do
+        util=`vmstat |awk '{if(NR==3)print 100-$15"%"}'`
+        user=`vmstat |awk '{if(NR==3)print $13"%"}'`
+        sys=`vmstat |awk '{if(NR==3)print $14"%"}'`
+        iowait=`vmstat |awk '{if(NR==3)print $16"%"}'`
+        echo "CPU - 使用率: $util , 等待磁盘IO响应使用率: $iowait"
+        let NUM++
+        sleep 1
+    done
+}
+
+function memory() {
+    total=`free -m |awk '{if(NR==2)printf "%.1f",$2/1024}'`
+    used=`free -m |awk '{if(NR==2) printf "%.1f",($2-$NF)/1024}'`
+    available=`free -m |awk '{if(NR==2) printf "%.1f",$NF/1024}'`
+    echo "内存 - 总大小: ${total}G , 使用: ${used}G , 剩余: ${available}G"
+}
+
+function disk() {
+    fs=$(df -h |awk '/^\/dev/{print $1}')
+    for p in $fs; do
+        mounted=$(df -h |awk '$1=="'$p'"{print $NF}')
+        size=$(df -h |awk '$1=="'$p'"{print $2}')
+        used=$(df -h |awk '$1=="'$p'"{print $3}')
+        used_percent=$(df -h |awk '$1=="'$p'"{print $5}')
+        echo "硬盘 - 挂载点: $mounted , 总大小: $size , 使用: $used , 使用率: $used_percent"
+    done
+}
+
+function tcp_status() {
+    summary=$(ss -antp |awk '{status[$1]++}END{for(i in status) printf i":"status[i]" "}')
+    echo "TCP连接状态 - $summary"
+}
+```
+## Case 3: Check servers' disk usage
+```shell
+#!/bin/bash
+HOST_INFO=host.info
+for IP in $(awk '/^[^#]/{print $1}' $HOST_INFO); do
+    USER=$(awk -v ip=$IP 'ip==$1{print $2}' $HOST_INFO)
+    PORT=$(awk -v ip=$IP 'ip==$1{print $3}' $HOST_INFO)
+    TMP_FILE=/tmp/disk.tmp
+    ssh -p $PORT $USER@$IP 'df -h' > $TMP_FILE
+    USE_RATE_LIST=$(awk 'BEGIN{OFS="="}/^\/dev/{print $NF,int($5)}' $TMP_FILE)
+    for USE_RATE in $USE_RATE_LIST; do
+        PART_NAME=${USE_RATE%=*}
+        USE_RATE=${USE_RATE#*=}
+        if [ $USE_RATE -ge 80 ]; then
+            echo "Warning: $PART_NAME Partition usage $USE_RATE%!"
+        fi
+    done
+done
+```
+## Case 4: 

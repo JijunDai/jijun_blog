@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: argo-tunnel
+  labels:
+    ingress: argo-tunnel
+  name: hugo-argo-tunnel
+  namespace: hugo
+spec:
+  tls:
+  - hosts:
+    - blog.mydomain.com
+    secretName: mydomain.com
+  rules:
+  - host: blog.mydomain.com
+    http:
+      paths:
+      - backend:
+          serviceName: hugo
+          servicePort: 80

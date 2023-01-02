@@ -1,0 +1,11 @@
+kubectl apply -f *.yml
+
+helm init --service-account tiller --upgrade
+
+kubectl create secret generic mydomain.com --from-file="$HOME/.cloudflared/cert.pem" -n hugo
+
+helm install --name mydomain --namespace default \
+    --set rbac.create=true \
+    --set controller.ingressClass=argo-tunnel \
+    --set controller.logLevel=6 \
+    cloudflare/argo-tunnel
